@@ -21,11 +21,15 @@ export function ReviewPanel({ prospectId, initialStatus, initialNotes, subject, 
   const [saved, setSaved] = useState(false)
 
   useEffect(() => {
-    const savedState = parseReviewState(window.localStorage.getItem(getReviewStorageKey(prospectId)))
-    if (savedState) {
-      setStatus(savedState.status)
-      setNotes(savedState.notes)
-    }
+    const timeoutId = window.setTimeout(() => {
+      const savedState = parseReviewState(window.localStorage.getItem(getReviewStorageKey(prospectId)))
+      if (savedState) {
+        setStatus(savedState.status)
+        setNotes(savedState.notes)
+      }
+    }, 0)
+
+    return () => window.clearTimeout(timeoutId)
   }, [prospectId])
 
   function persistReview(nextState: ProspectReviewState) {

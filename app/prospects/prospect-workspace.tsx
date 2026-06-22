@@ -74,14 +74,18 @@ export function ProspectWorkspace({
   const [reviewStates, setReviewStates] = useState<Record<string, ProspectReviewState>>({})
 
   useEffect(() => {
-    const nextStates: Record<string, ProspectReviewState> = {}
-    for (const prospect of prospects) {
-      const savedState = parseReviewState(window.localStorage.getItem(getReviewStorageKey(prospect.id)))
-      if (savedState) {
-        nextStates[prospect.id] = savedState
+    const timeoutId = window.setTimeout(() => {
+      const nextStates: Record<string, ProspectReviewState> = {}
+      for (const prospect of prospects) {
+        const savedState = parseReviewState(window.localStorage.getItem(getReviewStorageKey(prospect.id)))
+        if (savedState) {
+          nextStates[prospect.id] = savedState
+        }
       }
-    }
-    setReviewStates(nextStates)
+      setReviewStates(nextStates)
+    }, 0)
+
+    return () => window.clearTimeout(timeoutId)
   }, [prospects])
 
   const hydratedProspects = useMemo(
@@ -158,7 +162,7 @@ export function ProspectWorkspace({
     const anchor = document.createElement('a')
     anchor.href = url
     anchor.download = `repofuse-prospects-${new Date().toISOString().slice(0, 10)}.csv`
-    document.body.append(anchor)
+    document.body.appendChild(anchor)
     anchor.click()
     anchor.remove()
     URL.revokeObjectURL(url)
