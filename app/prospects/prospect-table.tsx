@@ -30,7 +30,7 @@ export function ProspectTable({ prospects }: ProspectTableProps) {
   return (
     <div className="overflow-hidden rounded-xl border">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[980px] text-sm">
+        <table className="w-full min-w-[1180px] text-sm">
           <thead className="bg-muted/50 text-left text-xs uppercase tracking-wide text-muted-foreground">
             <tr>
               <th className="px-4 py-3">Prospect</th>
@@ -43,6 +43,8 @@ export function ProspectTable({ prospects }: ProspectTableProps) {
               <th className="px-4 py-3">BIP</th>
               <th className="px-4 py-3">Score</th>
               <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3">Best reason</th>
+              <th className="px-4 py-3">Notes</th>
               <th className="px-4 py-3">Actions</th>
             </tr>
           </thead>
@@ -77,6 +79,12 @@ export function ProspectTable({ prospects }: ProspectTableProps) {
                   <Badge variant="secondary" className="capitalize">
                     {prospect.status}
                   </Badge>
+                </td>
+                <td className="max-w-[240px] px-4 py-4 align-top text-muted-foreground">
+                  <span className="line-clamp-2">{prospect.scoreReasons[0] || 'No scoring reason yet.'}</span>
+                </td>
+                <td className="max-w-[220px] px-4 py-4 align-top text-muted-foreground">
+                  <span className="line-clamp-2">{prospect.notes || 'No notes yet.'}</span>
                 </td>
                 <td className="px-4 py-4 align-top">
                   <Button asChild size="sm" variant="outline">

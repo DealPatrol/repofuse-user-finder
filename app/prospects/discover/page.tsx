@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { discoverGithubProspects } from '@/lib/prospect-engine/github-discovery-service'
 import { getMockProspects } from '@/lib/prospect-engine/prospect-repository'
 import type { DiscoveryResult, GithubDiscoveryInput } from '@/lib/prospect-engine/types'
-import { ProspectTable } from '../prospect-table'
+import { ProspectWorkspace } from '../prospect-workspace'
 
 export const dynamic = 'force-dynamic'
 
@@ -182,7 +182,11 @@ export default async function ProspectDiscoverPage({ searchParams }: DiscoverPag
             </CardContent>
           </Card>
 
-          <ProspectTable prospects={result.prospects} />
+          <ProspectWorkspace
+            prospects={result.prospects}
+            title="Discovered prospect queue"
+            description="Triage the current discovery run, persist local review states, and export the filtered queue."
+          />
         </section>
       </div>
     </main>

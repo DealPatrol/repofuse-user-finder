@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { getMockProspects } from '@/lib/prospect-engine/prospect-repository'
-import { ProspectTable } from './prospect-table'
+import { ProspectWorkspace } from './prospect-workspace'
 
 const workflowSteps = [
   {
@@ -107,7 +107,11 @@ export default function ProspectsPage() {
           </Button>
         </div>
 
-        <ProspectTable prospects={prospects} />
+        <ProspectWorkspace
+          prospects={prospects}
+          title="Sample prospect queue"
+          description="Filter, review, and export mock prospects before connecting a live GitHub token."
+        />
       </section>
     </main>
   )

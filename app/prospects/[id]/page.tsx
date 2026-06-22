@@ -181,7 +181,13 @@ export default async function ProspectDetailPage({ params }: ProspectDetailPageP
             </CardContent>
           </Card>
 
-          <ReviewPanel initialStatus={prospect.status} subject={outreach.subject} body={outreach.body} />
+          <ReviewPanel
+            prospectId={prospect.id}
+            initialStatus={prospect.status}
+            initialNotes={prospect.notes}
+            subject={outreach.subject}
+            body={outreach.body}
+          />
         </aside>
       </div>
     </main>
