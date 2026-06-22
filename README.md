@@ -1,4 +1,6 @@
-# RepoFuse Prospect Engine
+# repofuse-user-finder
+
+## RepoFuse Prospect Engine
 
 Standalone product prototype for finding developers who are likely to value RepoFuse.
 
