@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { AlertCircle, Check, AlertTriangle } from 'lucide-react'
+import { AlertCircle, Check, AlertTriangle, Sparkles } from 'lucide-react'
 import Link from 'next/link'
 
 interface TwitterConfig {
@@ -21,6 +21,13 @@ export default function SettingsPage() {
   const [businessHoursEnd, setBusinessHoursEnd] = useState(17)
   const [timezone, setTimezone] = useState('America/New_York')
   const [connecting, setConnecting] = useState(false)
+  
+  // Tweet configuration
+  const [tweetingEnabled, setTweetingEnabled] = useState(true)
+  const [dailyTweetCount, setDailyTweetCount] = useState(3)
+  const [tweetBusinessHoursStart, setTweetBusinessHoursStart] = useState(9)
+  const [tweetBusinessHoursEnd, setTweetBusinessHoursEnd] = useState(17)
+  const [tweetTimezone, setTweetTimezone] = useState('America/New_York')
 
   async function handleTwitterConnect() {
     setConnecting(true)
@@ -185,6 +192,115 @@ export default function SettingsPage() {
                       {businessHoursStart}:00 {timezone}
                     </strong>
                     .
+                  </p>
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Tweet Automation */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5" />
+              Auto-Post Tweets
+            </CardTitle>
+            <CardDescription>Automatically post tweets to grow your X/Twitter audience</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-sm font-medium">Enable Auto-Tweeting</label>
+                <p className="text-sm text-muted-foreground">Post tweets 2-4 times daily with educational insights and discoveries</p>
+              </div>
+              <button
+                onClick={() => setTweetingEnabled(!tweetingEnabled)}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  tweetingEnabled ? 'bg-blue-600' : 'bg-gray-300'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    tweetingEnabled ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+
+            {tweetingEnabled && (
+              <>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Daily Tweet Count</label>
+                  <select
+                    value={dailyTweetCount}
+                    onChange={(e) => setDailyTweetCount(parseInt(e.target.value))}
+                    className="w-full rounded border bg-background px-3 py-2"
+                  >
+                    <option value={2}>2 tweets per day</option>
+                    <option value={3}>3 tweets per day</option>
+                    <option value={4}>4 tweets per day</option>
+                  </select>
+                  <p className="text-xs text-muted-foreground">
+                    Posts spread evenly throughout business hours for natural engagement
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Business Hours (in {tweetTimezone})</label>
+                  <div className="flex gap-4">
+                    <div className="flex-1">
+                      <label className="text-xs text-muted-foreground">Start</label>
+                      <select
+                        value={tweetBusinessHoursStart}
+                        onChange={(e) => setTweetBusinessHoursStart(parseInt(e.target.value))}
+                        className="mt-1 w-full rounded border bg-background px-3 py-2"
+                      >
+                        {Array.from({ length: 24 }, (_, i) => (
+                          <option key={i} value={i}>
+                            {i.toString().padStart(2, '0')}:00
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="flex-1">
+                      <label className="text-xs text-muted-foreground">End</label>
+                      <select
+                        value={tweetBusinessHoursEnd}
+                        onChange={(e) => setTweetBusinessHoursEnd(parseInt(e.target.value))}
+                        className="mt-1 w-full rounded border bg-background px-3 py-2"
+                      >
+                        {Array.from({ length: 24 }, (_, i) => (
+                          <option key={i} value={i}>
+                            {i.toString().padStart(2, '0')}:00
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Timezone</label>
+                  <select
+                    value={tweetTimezone}
+                    onChange={(e) => setTweetTimezone(e.target.value)}
+                    className="w-full rounded border bg-background px-3 py-2"
+                  >
+                    <option>America/New_York</option>
+                    <option>America/Chicago</option>
+                    <option>America/Denver</option>
+                    <option>America/Los_Angeles</option>
+                    <option>Europe/London</option>
+                    <option>Europe/Paris</option>
+                    <option>Asia/Tokyo</option>
+                    <option>Asia/Singapore</option>
+                  </select>
+                </div>
+
+                <div className="rounded-lg border border-green-200 bg-green-50 p-4">
+                  <p className="text-sm text-green-900">
+                    Phase 1: Building follower base with educational tips, anonymized discoveries, and RepoFuse CTAs. No prospect tagging yet.
                   </p>
                 </div>
               </>
