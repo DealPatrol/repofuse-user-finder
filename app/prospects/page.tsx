@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ArrowRight, GitBranch, ShieldCheck, Sparkles, Users } from 'lucide-react'
+import { ArrowRight, GitBranch, ShieldCheck, Sparkles, Users, Settings } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -26,6 +26,13 @@ export default function ProspectsPage() {
 
   return (
     <main className="min-h-screen bg-background">
+      <div className="absolute right-4 top-4 z-10">
+        <Button asChild variant="ghost" size="icon">
+          <Link href="/settings" title="Settings">
+            <Settings className="h-5 w-5" />
+          </Link>
+        </Button>
+      </div>
       <section className="border-b bg-[radial-gradient(circle_at_top_left,rgba(6,182,212,0.18),transparent_32%),linear-gradient(180deg,rgba(15,23,42,0.98),rgba(2,6,23,1))] text-white">
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:py-20">
           <Badge variant="outline" className="border-cyan-400/30 bg-cyan-400/10 text-cyan-200">
@@ -67,7 +74,7 @@ export default function ProspectsPage() {
               </CardHeader>
               <CardContent>
                 <ul className="space-y-3 text-sm text-slate-200">
-                  <li>No auto-DMs or automated blasting.</li>
+                  <li>Auto-send respects business hours (configurable).</li>
                   <li>Only uses public profile and repo data.</li>
                   <li>Draft copy includes permission-based wording.</li>
                   <li>Live GitHub mode only runs when GITHUB_TOKEN is configured.</li>
