@@ -24,19 +24,26 @@ export async function sendTwitterDM(
 
     // Get user ID from username
     const user = await rwClient.v2.userByUsername(recipientUsername)
-    if (!user.data) {
+    if (!user.data?.id) {
       return { success: false, error: 'User not found' }
     }
 
-    // Send DM
-    const dm = await rwClient.v1.sendDm({
-      recipient_id: user.data.id,
-      text: message,
-    })
+    // Send DM via raw v1.1 endpoint - this is the most reliable method
+    const dm = await rwClient.v1.post('direct_messages/events/new', {
+      type: 'message_create',
+      message_create: {
+        target: {
+          recipient_id: user.data.id,
+        },
+        message_data: {
+          text: message,
+        },
+      },
+    } as any)
 
     return {
       success: true,
-      messageId: dm.event.id,
+      messageId: dm.event?.id,
     }
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
@@ -50,14 +57,17 @@ export async function sendTwitterDM(
 
 export function getTwitterOAuthUrl(
   consumerKey: string,
+  consumerSecret: string,
   redirectUri: string
 ): string {
-  const client = new TwitterApi({
-    appKey: consumerKey,
-    appSecret: '', // Not needed for URL generation
+  // Build OAuth 1.0a auth link
+  const baseUrl = 'https://twitter.com/i/oauth2/authorize'
+  const params = new URLSearchParams({
+    client_id: consumerKey,
+    redirect_uri: redirectUri,
+    response_type: 'code',
+    scope: 'tweet.read tweet.write users.read follows.read follows.write mute.read mute.write',
+    state: 'state',
   })
-
-  return client.generateAuthLink(redirectUri, {
-    authorizationUrl: 'https://twitter.com/i/oauth2/authorize',
-  })[0]
+  return `${baseUrl}?${params.toString()}`
 }
