@@ -3,8 +3,9 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { AlertCircle, Check, AlertTriangle, Sparkles } from 'lucide-react'
+import { AlertCircle, Check, AlertTriangle, Sparkles, Users } from 'lucide-react'
 import Link from 'next/link'
+import useSWR from 'swr'
 
 interface TwitterConfig {
   connected: boolean
@@ -28,6 +29,55 @@ export default function SettingsPage() {
   const [tweetBusinessHoursStart, setTweetBusinessHoursStart] = useState(9)
   const [tweetBusinessHoursEnd, setTweetBusinessHoursEnd] = useState(17)
   const [tweetTimezone, setTweetTimezone] = useState('America/New_York')
+
+  // Follow configuration
+  const [followEnabled, setFollowEnabled] = useState(true)
+  const [maxFollowsPerDay, setMaxFollowsPerDay] = useState(5)
+  const [gracePeriodDays, setGracePeriodDays] = useState(7)
+  
+  // Follow stats
+  const { data: followStats } = useSWR('/api/twitter/follow-stats', (url) =>
+    fetch(url).then((r) => r.json())
+  )
+  
+  const [checkingFollowers, setCheckingFollowers] = useState(false)
+  const [unfollowingNonFollowers, setUnfollowingNonFollowers] = useState(false)
+
+  async function handleCheckFollowers() {
+    setCheckingFollowers(true)
+    try {
+      const response = await fetch('/api/twitter/check-followers', {
+        method: 'POST',
+      })
+      const data = await response.json()
+      if (data.success) {
+        alert(`Checked follower status for ${data.updated} accounts`)
+      }
+    } catch (error) {
+      alert('Failed to check followers')
+    } finally {
+      setCheckingFollowers(false)
+    }
+  }
+
+  async function handleUnfollowNonFollowers() {
+    setUnfollowingNonFollowers(true)
+    try {
+      const response = await fetch('/api/twitter/unfollow-batch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ gracePeriodDays }),
+      })
+      const data = await response.json()
+      if (data.success) {
+        alert(`Unfollowed ${data.unfollowed} non-followers`)
+      }
+    } catch (error) {
+      alert('Failed to unfollow')
+    } finally {
+      setUnfollowingNonFollowers(false)
+    }
+  }
 
   async function handleTwitterConnect() {
     setConnecting(true)
@@ -301,6 +351,116 @@ export default function SettingsPage() {
                 <div className="rounded-lg border border-green-200 bg-green-50 p-4">
                   <p className="text-sm text-green-900">
                     Phase 1: Building follower base with educational tips, anonymized discoveries, and RepoFuse CTAs. No prospect tagging yet.
+                  </p>
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Follow/Unfollow */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              Auto-Follow Growth
+            </CardTitle>
+            <CardDescription>Automatically follow prospects and unfollow non-followers</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-sm font-medium">Enable Auto-Follow</label>
+                <p className="text-sm text-muted-foreground">Follow prospects from your discovery list</p>
+              </div>
+              <button
+                onClick={() => setFollowEnabled(!followEnabled)}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  followEnabled ? 'bg-blue-600' : 'bg-gray-300'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    followEnabled ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+
+            {followEnabled && (
+              <>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Max Follows Per Day</label>
+                    <select
+                      value={maxFollowsPerDay}
+                      onChange={(e) => setMaxFollowsPerDay(parseInt(e.target.value))}
+                      className="w-full rounded border bg-background px-3 py-2"
+                    >
+                      <option value={3}>3 per day</option>
+                      <option value={5}>5 per day</option>
+                      <option value={7}>7 per day</option>
+                      <option value={10}>10 per day</option>
+                    </select>
+                    <p className="text-xs text-muted-foreground">Respects Twitter API rate limits</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Unfollow Grace Period</label>
+                    <select
+                      value={gracePeriodDays}
+                      onChange={(e) => setGracePeriodDays(parseInt(e.target.value))}
+                      className="w-full rounded border bg-background px-3 py-2"
+                    >
+                      <option value={3}>3 days</option>
+                      <option value={5}>5 days</option>
+                      <option value={7}>7 days</option>
+                      <option value={14}>14 days</option>
+                    </select>
+                    <p className="text-xs text-muted-foreground">Wait before unfollowing non-followers</p>
+                  </div>
+                </div>
+
+                {followStats && (
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    <div className="rounded-lg border bg-card p-3">
+                      <p className="text-xs text-muted-foreground">Total Following</p>
+                      <p className="text-2xl font-bold">{followStats.stats?.totalFollowing || 0}</p>
+                    </div>
+                    <div className="rounded-lg border bg-green-50 p-3">
+                      <p className="text-xs text-green-700 font-medium">Following Back</p>
+                      <p className="text-2xl font-bold text-green-700">{followStats.stats?.followingBack || 0}</p>
+                    </div>
+                    <div className="rounded-lg border bg-orange-50 p-3">
+                      <p className="text-xs text-orange-700 font-medium">Not Following Back</p>
+                      <p className="text-2xl font-bold text-orange-700">{followStats.stats?.notFollowingBack || 0}</p>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex gap-2">
+                  <Button
+                    onClick={handleCheckFollowers}
+                    disabled={checkingFollowers}
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    {checkingFollowers ? 'Checking...' : 'Check Followers'}
+                  </Button>
+                  <Button
+                    onClick={handleUnfollowNonFollowers}
+                    disabled={unfollowingNonFollowers}
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    {unfollowingNonFollowers ? 'Unfollowing...' : 'Unfollow Non-Followers'}
+                  </Button>
+                </div>
+
+                <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+                  <p className="text-sm text-blue-900">
+                    Auto-follows {maxFollowsPerDay} prospects daily. Non-followers are checked weekly on Sundays at 10 AM UTC
+                    and unfollowed after {gracePeriodDays} days without a follow-back.
                   </p>
                 </div>
               </>
