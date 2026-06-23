@@ -3,9 +3,10 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { AlertCircle, Check, AlertTriangle, Sparkles, Users } from 'lucide-react'
+import { AlertCircle, Check, AlertTriangle, Sparkles, Users, Shield } from 'lucide-react'
 import Link from 'next/link'
 import useSWR from 'swr'
+import { useEffect, useState } from 'react'
 
 interface TwitterConfig {
   connected: boolean
@@ -40,8 +41,14 @@ export default function SettingsPage() {
     fetch(url).then((r) => r.json())
   )
   
+  // Safety dashboard
+  const { data: safetyData, mutate: refreshSafety } = useSWR('/api/twitter/safety-dashboard', (url) =>
+    fetch(url).then((r) => r.json()).catch(() => null)
+  )
+  
   const [checkingFollowers, setCheckingFollowers] = useState(false)
   const [unfollowingNonFollowers, setUnfollowingNonFollowers] = useState(false)
+  const [runningHealthCheck, setRunningHealthCheck] = useState(false)
 
   async function handleCheckFollowers() {
     setCheckingFollowers(true)
@@ -76,6 +83,18 @@ export default function SettingsPage() {
       alert('Failed to unfollow')
     } finally {
       setUnfollowingNonFollowers(false)
+    }
+  }
+
+  async function handleRunHealthCheck() {
+    setRunningHealthCheck(true)
+    try {
+      await refreshSafety()
+      alert('Account health check completed')
+    } catch (error) {
+      alert('Failed to run health check')
+    } finally {
+      setRunningHealthCheck(false)
     }
   }
 
@@ -465,6 +484,155 @@ export default function SettingsPage() {
                 </div>
               </>
             )}
+          </CardContent>
+        </Card>
+
+        {/* Account Safety Dashboard */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Shield className="h-5 w-5" />
+              Account Safety Monitor
+            </CardTitle>
+            <CardDescription>Real-time monitoring to prevent account suspension</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {safetyData?.dashboard && (
+              <>
+                {/* Automation Status */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-sm font-medium">Automation Status</p>
+                    {safetyData.dashboard.automationStatus.paused ? (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-700">
+                        <AlertCircle className="h-3 w-3" />
+                        Paused
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700">
+                        <Check className="h-3 w-3" />
+                        Active
+                      </span>
+                    )}
+                  </div>
+                  {safetyData.dashboard.automationStatus.paused && (
+                    <p className="text-sm text-red-600 mb-3">
+                      {safetyData.dashboard.automationStatus.pauseReason}
+                    </p>
+                  )}
+                </div>
+
+                {/* Rate Limits */}
+                <div>
+                  <p className="text-sm font-medium mb-3">Daily Action Usage</p>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="rounded border bg-card p-3">
+                      <div className="flex justify-between items-center mb-1">
+                        <p className="text-xs text-muted-foreground">Follows</p>
+                        <span className="text-xs font-medium">
+                          {safetyData.dashboard.rateLimits.today.follows}/{safetyData.dashboard.rateLimits.limits.maxFollowsPerDay}
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded h-1.5">
+                        <div
+                          className="bg-blue-500 h-1.5 rounded"
+                          style={{
+                            width: `${Math.min(100, (safetyData.dashboard.rateLimits.today.follows / safetyData.dashboard.rateLimits.limits.maxFollowsPerDay) * 100)}%`,
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="rounded border bg-card p-3">
+                      <div className="flex justify-between items-center mb-1">
+                        <p className="text-xs text-muted-foreground">Likes</p>
+                        <span className="text-xs font-medium">
+                          {safetyData.dashboard.rateLimits.today.likes}/{safetyData.dashboard.rateLimits.limits.maxLikesPerHour * 24}
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded h-1.5">
+                        <div
+                          className="bg-green-500 h-1.5 rounded"
+                          style={{
+                            width: `${Math.min(100, (safetyData.dashboard.rateLimits.today.likes / (safetyData.dashboard.rateLimits.limits.maxLikesPerHour * 24)) * 100)}%`,
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Account Health */}
+                {safetyData.dashboard.accountHealth && (
+                  <div>
+                    <p className="text-sm font-medium mb-3">Account Health Score</p>
+                    <div className="rounded border bg-card p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-2xl font-bold">
+                          {safetyData.dashboard.accountHealth.healthScore}/100
+                        </span>
+                        <span className="text-sm font-medium">
+                          {safetyData.dashboard.accountHealth.healthScore >= 70 ? '✓ Healthy' : '⚠ At Risk'}
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div
+                          className={`h-2 rounded-full ${
+                            safetyData.dashboard.accountHealth.healthScore >= 70 ? 'bg-green-500' : 'bg-red-500'
+                          }`}
+                          style={{ width: `${safetyData.dashboard.accountHealth.healthScore}%` }}
+                        />
+                      </div>
+                      <div className="mt-3 text-xs text-muted-foreground">
+                        <p>Followers: {safetyData.dashboard.accountHealth.metrics.followers}</p>
+                        <p>Following: {safetyData.dashboard.accountHealth.metrics.following}</p>
+                        <p>Follower Ratio: {safetyData.dashboard.accountHealth.metrics.followerRatio.toFixed(2)}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Recommendations */}
+                {safetyData.dashboard.recommendations && safetyData.dashboard.recommendations.length > 0 && (
+                  <div>
+                    <p className="text-sm font-medium mb-2">Recommendations</p>
+                    <div className="space-y-2">
+                      {safetyData.dashboard.recommendations.map((rec: any, idx: number) => (
+                        <div
+                          key={idx}
+                          className={`rounded p-2 text-sm ${
+                            rec.level === 'critical'
+                              ? 'bg-red-50 text-red-700 border border-red-200'
+                              : rec.level === 'warning'
+                              ? 'bg-yellow-50 text-yellow-700 border border-yellow-200'
+                              : 'bg-blue-50 text-blue-700 border border-blue-200'
+                          }`}
+                        >
+                          {rec.message}
+                          {rec.action && <div className="mt-1 font-medium">{rec.action}</div>}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <Button
+                  onClick={handleRunHealthCheck}
+                  disabled={runningHealthCheck}
+                  variant="outline"
+                  className="w-full"
+                >
+                  {runningHealthCheck ? 'Running Health Check...' : 'Run Health Check Now'}
+                </Button>
+              </>
+            )}
+
+            <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+              <p className="text-sm text-blue-900">
+                Safety monitoring prevents automated actions that could trigger Twitter rate limits or account warnings.
+                All engagement respects hard stop thresholds and includes automatic circuit breaker protection.
+              </p>
+            </div>
           </CardContent>
         </Card>
 
