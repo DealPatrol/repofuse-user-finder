@@ -1,12 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { AlertCircle, Check, AlertTriangle, Sparkles, Users, Shield } from 'lucide-react'
 import Link from 'next/link'
 import useSWR from 'swr'
-import { useEffect, useState } from 'react'
 
 interface TwitterConfig {
   connected: boolean

@@ -5,6 +5,9 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { getMockProspects } from '@/lib/prospect-engine/prospect-repository'
 import { ProspectTable } from './prospect-table'
+import { auth } from '@/lib/auth'
+import { headers } from 'next/headers'
+import { redirect } from 'next/navigation'
 
 const workflowSteps = [
   {
@@ -21,7 +24,13 @@ const workflowSteps = [
   },
 ]
 
-export default function ProspectsPage() {
+export default async function ProspectsPage() {
+  const session = await auth.api.getSession({ headers: await headers() })
+  
+  if (!session?.user) {
+    redirect('/sign-in')
+  }
+
   const prospects = getMockProspects()
 
   return (

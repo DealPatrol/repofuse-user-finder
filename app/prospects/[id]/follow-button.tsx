@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Twitter } from 'lucide-react'
+import { Share2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 interface FollowButtonProps {
@@ -53,7 +53,7 @@ export function FollowButton({ githubUsername, twitterHandle }: FollowButtonProp
         size="sm"
         className="w-full gap-2"
       >
-        <Twitter className="h-4 w-4" />
+        <Share2 className="h-4 w-4" />
         {followed ? 'Following' : 'Follow on Twitter'}
       </Button>
     </div>
