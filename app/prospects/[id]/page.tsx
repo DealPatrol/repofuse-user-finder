@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { ArrowLeft, ExternalLink, GitBranch, Mail, MapPin, ShieldCheck, Twitter } from 'lucide-react'
+import { ArrowLeft, ExternalLink, GitBranch, Mail, MapPin, ShieldCheck } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -123,7 +123,6 @@ export default async function ProspectDetailPage({ params }: ProspectDetailPageP
                 </div>
                 <FollowButton
                   githubUsername={prospect.githubUsername}
-                  twitterHandle={prospect.twitterHandle}
                 />
               </CardContent>
             </Card>

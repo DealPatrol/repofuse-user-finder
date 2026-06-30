@@ -76,8 +76,10 @@ export async function followUser(
       return { success: false, error: 'User not found' }
     }
 
-    // Follow the user
-    await rwClient.v2.follow(user.data.id)
+    // Follow the user using v1.1 API
+    await rwClient.v1.post('friendships/create', {
+      user_id: user.data.id,
+    })
 
     // Record the follow
     const data = loadFollows()
@@ -193,7 +195,9 @@ export async function unfollowNonFollowers(
           // Get user ID
           const user = await rwClient.v2.userByUsername(follow.twitterHandle)
           if (user.data?.id) {
-            await rwClient.v2.unfollow(user.data.id)
+            await rwClient.v1.post('friendships/destroy', {
+              user_id: user.data.id,
+            })
             unfollowed++
 
             // Remove from tracking
