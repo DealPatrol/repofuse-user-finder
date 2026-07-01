@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { getProspectByIdOrUsername } from '@/lib/prospect-engine/github-discovery-service'
 import { generateOutreachMessage } from '@/lib/prospect-engine/outreach-generator'
 import { ReviewPanel } from './review-panel'
+import { FollowButton } from './follow-button'
 
 export const dynamic = 'force-dynamic'
 
@@ -101,7 +102,7 @@ export default async function ProspectDetailPage({ params }: ProspectDetailPageP
                 <CardTitle>Contact context</CardTitle>
                 <CardDescription>Use only public contact information and manual approval.</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-3 text-sm">
+              <CardContent className="space-y-4 text-sm">
                 <a
                   href={prospect.githubUrl}
                   target="_blank"
@@ -120,6 +121,9 @@ export default async function ProspectDetailPage({ params }: ProspectDetailPageP
                   <MapPin className="h-4 w-4" />
                   {prospect.location || 'No public location'}
                 </div>
+                <FollowButton
+                  githubUsername={prospect.githubUsername}
+                />
               </CardContent>
             </Card>
           </div>
