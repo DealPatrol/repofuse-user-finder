@@ -1,5 +1,4 @@
 import { betterAuth } from 'better-auth'
-import { twitter } from 'better-auth/social-providers'
 import { pool } from '@/lib/db'
 
 const baseURL =
@@ -18,10 +17,11 @@ export const auth = betterAuth({
     autoSignIn: true,
   },
   socialProviders: {
-    twitter: twitter({
+    twitter: {
+      enabled: true,
       clientId: process.env.TWITTER_CLIENT_ID!,
       clientSecret: process.env.TWITTER_CLIENT_SECRET!,
-    }),
+    },
   },
   trustedOrigins: [
     ...(process.env.V0_RUNTIME_URL ? [process.env.V0_RUNTIME_URL] : []),
