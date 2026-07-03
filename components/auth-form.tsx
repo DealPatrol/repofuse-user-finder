@@ -21,32 +21,49 @@ export function AuthForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    console.log("[v0] Sign in/up attempt:", { mode, email, isSignUp })
     setError(null)
     setLoading(true)
 
-    const { error } = isSignUp
-      ? await authClient.signUp.email({ email, password, name })
-      : await authClient.signIn.email({ email, password })
+    try {
+      const result = isSignUp
+        ? await authClient.signUp.email({ email, password, name })
+        : await authClient.signIn.email({ email, password })
+      
+      console.log("[v0] Auth result:", result)
+      
+      const { error } = result
 
-    setLoading(false)
+      setLoading(false)
 
-    if (error) {
-      setError(error.message ?? 'Something went wrong')
-      return
+      if (error) {
+        console.log("[v0] Auth error:", error)
+        setError(error.message ?? 'Something went wrong')
+        return
+      }
+
+      console.log("[v0] Auth success, redirecting...")
+      router.push('/')
+      router.refresh()
+    } catch (err) {
+      console.log("[v0] Exception during auth:", err)
+      setLoading(false)
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred')
     }
-
-    router.push('/')
-    router.refresh()
   }
 
   const handleTwitterSignIn = async () => {
+    console.log("[v0] Twitter sign-in clicked")
     setError(null)
     try {
-      await authClient.signIn.social({
+      console.log("[v0] Initiating Twitter OAuth...")
+      const result = await authClient.signIn.social({
         provider: 'twitter',
         callbackURL: '/',
       })
+      console.log("[v0] Twitter sign-in result:", result)
     } catch (err) {
+      console.log("[v0] Twitter sign-in error:", err)
       setError('Failed to sign in with Twitter')
     }
   }
